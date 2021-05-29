@@ -1,39 +1,29 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
-import { CATEGORIES, MEALS } from "../data/dummy-data";
-import MealItem from "../components/MealItem";
+import { View, StyleSheet } from "react-native";
+import { useSelector } from "react-redux";
+
+import { CATEGORIES } from "../data/dummy-data";
+import MealList from "../components/MealList";
+import DefaultText from "../components/DefaultText";
 
 const CategoryMealsScreen = (props) => {
-  const renderMealItem = (itemData) => {
-    return (
-      <MealItem
-        title={itemData.item.title}
-        duration={itemData.item.duration}
-        complexity={itemData.item.complexity}
-        affordability={itemData.item.affordability}
-        image={itemData.item.imageUrl}
-        onSelectMeal={() => {
-          props.navigation.navigate("MealDetail", {mealId: itemData.item.id});
-        }}
-      />
-    );
-  };
-
   const catId = props.navigation.getParam("categoryId");
 
-  const displayMeals = MEALS.filter(
+  const availableMeals = useSelector((state) => state.meals.filteredMeals);
+
+  const displayMeals = availableMeals.filter(
     (meal) => meal.categoryIds.indexOf(catId) >= 0
   );
-  return (
-    <View style={styles.screen}>
-      <FlatList
-        data={displayMeals}
-        keyExtractor={(item, index) => item.id}
-        renderItem={renderMealItem}
-        style={{ width: "100%", padding: 10 }}
-      />
-    </View>
-  );
+
+  if (displayMeals.length === 0) {
+    return (
+      <View style={styles.content}>
+        <DefaultText>No meals found, maybe check your filters?</DefaultText>
+      </View>
+    );
+  }
+
+  return <MealList listData={displayMeals} navigation={props.navigation} />;
 };
 
 CategoryMealsScreen.navigationOptions = (navigationData) => {
@@ -47,7 +37,7 @@ CategoryMealsScreen.navigationOptions = (navigationData) => {
 };
 
 const styles = StyleSheet.create({
-  screen: {
+  content: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
